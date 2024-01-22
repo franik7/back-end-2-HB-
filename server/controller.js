@@ -1,52 +1,44 @@
+const houses = require('./db.json')
+let globalId = 4
+
 module.exports = {
-    getAllUsers: (req, res) => {
-        res.status(200).send(housesDB);
+    getHouses: (req, res) => res.status(200).send(houses),
+
+    deleteHouse: (req, res) => {
+        let index = houses.findIndex(elem => elem.id === +req.params.id)
+        houses.splice(index, 1)
+        res.status(200).send(houses)
     },
-    createNewUser: (req, res) => {
-        const { username, firstName, lastName, age } = req.body;
 
-        if (!username || !firstName || !lastName) {
-            res.status(400).send("Forms cannot be empty");
-            return;
+    createHouse: (req, res) => {
+        let { address, price, imageURL } = req.body
+        let newHouse = {
+            id: globalId,
+            address, 
+            price,
+            imageURL
         }
-
-        let newUser = {
-            username: username,
-            firstName: firstName,
-            lastName: lastName,
-            age: age,
-        };
-
-        usersDB.push(newUser);
-        res.status(200).send(usersDB);
+        houses.push(newHouse)
+        res.status(200).send(houses)
+        globalId++
     },
-    updateUser: (req, res) => {
-        const { name } = req.params;
-        const { username } = req.body;
+    
+    updateHouse: (req, res) => {
+        let { id } = req.params
+        let { type } = req.body
+        let index = houses.findIndex(elem => +elem.id === +id)
 
-        if (!username) {
-            res.status(400).send("Failed to update");
-            return;
-        }
-
-        const userToBeUpdated = usersDB.find(el => el.username === name);
-
-        if (userToBeUpdated) {
-            userToBeUpdated.username = username;
-            res.status(200).send('Successfully updated user');
+        if (houses[index].price <= 10000 && type === 'minus') {
+            houses[index].price = 0
+            res.status(200).send(houses)
+        } else if (type === 'plus') {
+            houses[index].price += 10000
+            res.status(200).send(houses)
+        } else if (type === 'minus') {
+            houses[index].price -= 10000
+            res.status(200).send(houses)
         } else {
-            res.status(404).send("User not found");
+            res.sendStatus(400)
         }
-    },
-    deleteUser: (req, res) => {
-        const { username } = req.params;
-        const indexToDelete = usersDB.findIndex(el => el.username === username);
-
-        if (indexToDelete !== -1) {
-            usersDB.splice(indexToDelete, 1);
-            res.status(200).send("Successfully deleted");
-        } else {
-            res.status(404).send("User not found");
-        }
-    },
-};
+    }
+}
